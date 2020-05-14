@@ -3,8 +3,9 @@
 The base configuration for reverse proxy (both localhost without HTTPS and public domain name with HTTPS)
 The REST API server is implemented by Flask
 
-When you access to http(s)://<address>/, it will show "this is index.html"
-When you access to http(s)://<address/api/v1/test/, it will show "Flask OK"
+When you access to http(s)://\<address\>/, it will show "This is index.html"
+
+When you access to http(s)://\<address\>/api/v1/test/, it will show "Flask OK"
 
 # How to use
 
