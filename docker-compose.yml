@@ -1,0 +1,71 @@
+version: '3.7'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:alpine
+    container_name: nginx-proxy
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - cert:/etc/nginx/certs
+      - html:/usr/share/nginx/html
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+
+  letsencrypt-nginx:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: lets
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - cert:/etc/nginx/certs:rw
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    depends_on:
+      - nginx-proxy
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: web
+    environment:
+      - VIRTUAL_HOST=www.example.com
+      - LETSENCRYPT_HOST=www.example.com
+      - LETSENCRYPT_EMAIL=xxx@gmail.com
+    volumes:
+      - html:/usr/share/nginx/challenge
+      - ./web/html:/usr/share/nginx/html
+    depends_on:
+      - letsencrypt-nginx
+
+  web2:
+    build:
+      context: ./web2
+      dockerfile: Dockerfile
+    container_name: web2
+    environment:
+      - VIRTUAL_HOST=blog.example.com
+      - LETSENCRYPT_HOST=blog.example.com
+      - LETSENCRYPT_EMAIL=xxx@gmail.com
+    volumes:
+      - html:/usr/share/nginx/challenge
+      - ./web2/html:/usr/share/nginx/html
+    depends_on:
+      - letsencrypt-nginx
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: app
+    ports:
+      - 3031:3031
+    volumes:
+      - ./app/src:/src
+
+volumes:
+  cert:
+  vhost:
+  html:
+
